@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 0px;
+            padding: 0;
             background-color: #f0f0f0;
         }
         #weatherInfo {
@@ -69,32 +69,28 @@
                 weatherInfo.forEach(item => {
                     if (item.category === 'SKY') {
                         const sky = parseInt(item.fcstValue);
-                        if (sky === 1) {
-                            weatherString = '맑음';
-                        } else if (sky === 2) {
-                            weatherString = '구름 많음';
-                        } else if (sky === 3) {
-                            weatherString = '흐림';
-                        } else {
-                            weatherString = '비';
-                        }
+                        weatherString = sky === 1 ? '맑음' : sky === 2 ? '구름 많음' : sky === 3 ? '흐림' : '비';
                     } else if (item.category === 'TMP') {
                         temperature = `${item.fcstValue}°C`;
                     }
                 });
 
-                const year = today.getFullYear();
-                const month = String(today.getMonth() + 1).padStart(2, '0');
-                const day = String(today.getDate()).padStart(2, '0');
-                const hourDisplay = String(today.getHours()).padStart(2, '0');
-                const minute = String(today.getMinutes()).padStart(2, '0');
-
-                // 날씨 정보를 업데이트
-                document.getElementById('weatherInfo').innerText = `${year}년 ${month}월 ${day}일 ${hourDisplay}시 ${minute}분 ${weatherString}, 기온: ${temperature}`;
+                updateWeatherDisplay(today, weatherString, temperature);
             } catch (error) {
                 console.error('Error fetching weather data:', error);
                 document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
             }
+        }
+
+        function updateWeatherDisplay(today, weatherString, temperature) {
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const hourDisplay = String(today.getHours()).padStart(2, '0');
+            const minute = String(today.getMinutes()).padStart(2, '0');
+
+            // 날씨 정보를 업데이트
+            document.getElementById('weatherInfo').innerText = `${year}년 ${month}월 ${day}일 ${hourDisplay}시 ${minute}분 ${weatherString}, 기온: ${temperature}`;
         }
 
         function updateCurrentTime() {
@@ -102,11 +98,10 @@
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
             const weatherInfoDiv = document.getElementById('weatherInfo');
-            const weatherInfoText = weatherInfoDiv.innerText.split(/(\d{2}시\s\d{2}분)/)[0]; // 기존 날씨 정보만 가져옴
-            const weatherString = weatherInfoDiv.innerText.split(/(\d{2}시\s\d{2}분)/)[1]; // 기존 날씨 정보 뒤부분
-
+            const weatherString = weatherInfoDiv.innerText.split(/,\s기온:/)[0]; // 기존 날씨 정보 앞부분
+            
             // 현재 시간만 업데이트
-            weatherInfoDiv.innerText = `${weatherInfoText}${hour}시 ${minute}분 ${weatherString}`;
+            weatherInfoDiv.innerText = `${weatherString}, ${hour}시 ${minute}분 ${weatherInfoDiv.innerText.split(/,\s기온:/)[1]}`;
         }
 
         function checkAndFetchWeather() {
