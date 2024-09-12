@@ -62,7 +62,7 @@
             }
         }
 
-        async function fetchWeatherData(date, hour) {
+   async function fetchWeatherData(date, hour, attempt = 1) {
     const area = "&nx=59&ny=74"; // 광주 지역 좌표
     const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`;
     
@@ -77,20 +77,12 @@
         let weatherString = '';
         let temperature = '';
         let precipitationType = '';
-        let skyStat ='';
+        let skyStat = '';
 
         weatherInfo.forEach(item => {
             if (item.category === 'SKY') {
                 const sky = parseInt(item.fcstValue);
-                if (sky === 1) {
-                    skyStat = '1';
-                } else if (sky === 2) {
-                    skyStat = '2';
-                } else if (sky === 3) {
-                    skyStat = '3';
-                } else {
-                    skyStat = '4';
-                }
+                skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
             } else if (item.category === 'TMP') {
                 temperature = `${item.fcstValue}°C`;
             } else if (item.category === 'PTY') {
@@ -102,17 +94,10 @@
                 } else if (pty === 3) {
                     weatherString = '눈';
                 } else if (pty === 0) {
-                    if(skyStat === 1 || skyStat ===2){
-                        weatherString="맑음";
-                    }
-                    else{
-                        weatherString="흐림";
-                    }
+                    weatherString = (skyStat === '1' || skyStat === '2') ? "맑음" : "흐림";
                 }
             }
         });
-
-
 
         // 결과 저장
         weatherData.date = date;
@@ -122,7 +107,11 @@
         updateWeatherDisplay();
     } catch (error) {
         console.error('날씨 데이터 가져오기 오류:', error);
-        document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
+        if (attempt < 3) {
+            setTimeout(() => fetchWeatherData(date, hour, attempt + 1), 3000); // 3초 후 재시도
+        } else {
+            document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
+        }
     }
 }
 
