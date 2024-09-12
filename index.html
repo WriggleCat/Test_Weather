@@ -97,7 +97,13 @@
 
         function updateWeatherDisplay() {
             const { date, time, weather, temperature } = weatherData;
-            document.getElementById('weatherInfo').innerText = `${date} ${time} ${weather} 기온: ${temperature}`;
+
+            // 날짜 포맷팅
+            const formattedDate = `${date.slice(0, 4)}년 ${date.slice(4, 6)}월 ${date.slice(6, 8)}일`;
+            // 시간 포맷팅
+            const formattedTime = `${time.slice(0, 2)}시 ${time.slice(3, 5)}분`;
+
+            document.getElementById('weatherInfo').innerText = `${formattedDate} ${formattedTime} ${temperature}`;
         }
 
         function updateCurrentTime() {
