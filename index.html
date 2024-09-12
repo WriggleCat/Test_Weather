@@ -100,7 +100,7 @@
             const weatherInfoDiv = document.getElementById('weatherInfo');
             const weatherString = weatherInfoDiv.innerText.split(/,\s기온:/)[0]; 
             
-            weatherInfoDiv.innerText = `${weatherString}, ${hour}시 ${minute}분 ${weatherInfoDiv.innerText.split(/,\s기온:/)[1]}`;
+            weatherInfoDiv.innerText = `${weatherString}, ${hour}시 ${minute}분 ${weatherInfoDiv.innerText.split(/,\s기온: ${temperature}/)[1]}`;
         }
 
         function checkAndFetchWeather() {
