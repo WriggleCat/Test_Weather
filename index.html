@@ -27,6 +27,13 @@
     <div id="weatherInfo">날씨 정보를 불러오는 중...</div>
     <div id="error"></div>
     <script>
+        let weatherData = {
+            date: '',
+            time: '',
+            weather: '',
+            temperature: ''
+        };
+
         async function fetchWeather() {
             const today = new Date();
             const date = today.toISOString().slice(0, 10).replace(/-/g, '');
@@ -76,31 +83,27 @@
                     }
                 });
 
-                updateWeatherDisplay(today, weatherString, temperature);
+                weatherData.date = today.toISOString().slice(0, 10).replace(/-/g, '');
+                weatherData.time = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+                weatherData.weather = weatherString;
+                weatherData.temperature = temperature;
+
+                updateWeatherDisplay();
             } catch (error) {
                 console.error('Error fetching weather data:', error);
                 document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
             }
         }
 
-        function updateWeatherDisplay(today, weatherString, temperature) {
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            const hourDisplay = String(today.getHours()).padStart(2, '0');
-            const minute = String(today.getMinutes()).padStart(2, '0');
-
-            document.getElementById('weatherInfo').innerText = `${year}년 ${month}월 ${day}일 ${hourDisplay}시 ${minute}분 ${weatherString} 기온: ${temperature}`;
+        function updateWeatherDisplay() {
+            const { date, time, weather, temperature } = weatherData;
+            document.getElementById('weatherInfo').innerText = `${date} ${time} ${weather} 기온: ${temperature}`;
         }
 
         function updateCurrentTime() {
             const now = new Date();
-            const hour = String(now.getHours()).padStart(2, '0');
-            const minute = String(now.getMinutes()).padStart(2, '0');
-            const weatherInfoDiv = document.getElementById('weatherInfo');
-            const weatherString = weatherInfoDiv.innerText.split(/,\s기온:/)[0]; 
-            
-            weatherInfoDiv.innerText = `${weatherString}, ${hour}시 ${minute}분 ${weatherInfoDiv.innerText.split(/,\s기온: ${temperature}/)[1]}`;
+            weatherData.time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            updateWeatherDisplay();
         }
 
         function checkAndFetchWeather() {
