@@ -8,6 +8,7 @@
 <body>
     <div id="weatherInfo"></div>
     <div id="error"></div>
+    <div id="variables"></div> <!-- 변수 값을 보여줄 요소 추가 -->
 
     <script>
         async function fetchWeather() {
@@ -37,7 +38,7 @@
 
         async function fetchWeatherData(date, hour, today) {
             const area = "&nx=59&ny=74"; // 지역 좌표
-            const url =  `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&numOfRows=10&pageNo=1&dataType=JSON&base_date=${date}&base_time=${hour}${area}`;
+            const url = `$http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&numOfRows=10&pageNo=1&dataType=JSON&base_date=${date}&base_time=${hour}${area}`;
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
@@ -74,6 +75,11 @@
 
                 document.getElementById('weatherInfo').innerText = 
                     `${year}년 ${month}월 ${day}일 ${hourFormatted}시 ${minute}분 ${temperature}, 날씨: ${weatherString}`;
+                
+                // 변수 값을 출력
+                document.getElementById('variables').innerText = 
+                    `변수 값: 날짜=${date}, 시간=${hour}, 날씨=${weatherString}, 온도=${temperature}`;
+
             } catch (error) {
                 console.error('Error fetching weather data:', error);
                 document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
