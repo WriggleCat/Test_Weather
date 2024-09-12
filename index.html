@@ -89,6 +89,7 @@
                 const hourDisplay = String(today.getHours()).padStart(2, '0');
                 const minute = String(today.getMinutes()).padStart(2, '0');
 
+                // 날씨 정보를 업데이트
                 document.getElementById('weatherInfo').innerText = `${year}년 ${month}월 ${day}일 ${hourDisplay}시 ${minute}분 ${weatherString}, 기온: ${temperature}`;
             } catch (error) {
                 console.error('Error fetching weather data:', error);
@@ -101,7 +102,12 @@
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
             const second = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('weatherInfo').innerText += ` 현재 시간: ${hour}:${minute}:${second}`;
+            // 현재 시간을 표시할 새로운 문자열 생성
+            const currentTimeString = `현재 시간: ${hour}:${minute}:${second}`;
+            // 기존 날씨 정보에 현재 시간만 업데이트
+            const weatherInfoDiv = document.getElementById('weatherInfo');
+            const weatherInfoText = weatherInfoDiv.innerText.split(' 현재 시간:')[0]; // 기존 날씨 정보만 가져옴
+            weatherInfoDiv.innerText = `${weatherInfoText} ${currentTimeString}`;
         }
 
         function checkAndFetchWeather() {
