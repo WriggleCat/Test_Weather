@@ -18,9 +18,13 @@
         #error {
             color: red;
         }
+        #currentTime {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
+    <div id="currentTime"></div>
     <div id="weatherInfo"></div>
     <div id="error"></div>
     <script>
@@ -94,7 +98,27 @@
             }
         }
 
-        fetchWeather();
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('currentTime').innerText = `현재 시각: ${hours}:${minutes}:${seconds}`;
+        }
+
+        function checkAndFetchWeather() {
+            const now = new Date();
+            if (now.getMinutes() === 0 && now.getSeconds() === 0) {
+                fetchWeather();
+            }
+        }
+
+        setInterval(() => {
+            updateCurrentTime();
+            checkAndFetchWeather();
+        }, 1000); // 1초마다 갱신
+
+        fetchWeather(); // 초기 호출
     </script>
 </body>
 </html>
