@@ -76,7 +76,7 @@
                     `${year}년 ${month}월 ${day}일 ${hourFormatted}시 ${minute}분 ${temperature}, 날씨: ${weatherString}`;
             } catch (error) {
                 console.error('Error fetching weather data:', error);
-                document.getElementById('error').innerText = `데이터 오류!: ${error.message}`;
+                document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
             }
         }
 
