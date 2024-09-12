@@ -8,14 +8,14 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            margin: 0; /* 여백 제거 */
-            padding: 0px; /* 원하면 상단 패딩 추가 */
-            background-color: #f0f0f0; /* 배경색 추가 */
+            margin: 0;
+            padding: 0px;
+            background-color: #f0f0f0;
         }
         #weatherInfo {
             font-size: 24px;
-            margin-top: 20px; /* 여백 추가 */
-            color: #333; /* 글자 색상 추가 */
+            margin-top: 20px;
+            color: #333;
         }
         #error {
             color: red;
@@ -101,13 +101,12 @@
             const now = new Date();
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
-            const second = String(now.getSeconds()).padStart(2, '0');
-            // 현재 시간을 표시할 새로운 문자열 생성
-            const currentTimeString = `현재 시간: ${hour}:${minute}:${second}`;
-            // 기존 날씨 정보에 현재 시간만 업데이트
             const weatherInfoDiv = document.getElementById('weatherInfo');
-            const weatherInfoText = weatherInfoDiv.innerText.split(' 현재 시간:')[0]; // 기존 날씨 정보만 가져옴
-            weatherInfoDiv.innerText = `${weatherInfoText} ${currentTimeString}`;
+            const weatherInfoText = weatherInfoDiv.innerText.split(/(\d{2}시\s\d{2}분)/)[0]; // 기존 날씨 정보만 가져옴
+            const weatherString = weatherInfoDiv.innerText.split(/(\d{2}시\s\d{2}분)/)[1]; // 기존 날씨 정보 뒤부분
+
+            // 현재 시간만 업데이트
+            weatherInfoDiv.innerText = `${weatherInfoText}${hour}시 ${minute}분 ${weatherString}`;
         }
 
         function checkAndFetchWeather() {
