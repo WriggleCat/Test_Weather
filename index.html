@@ -1,3 +1,34 @@
+한국농어촌공사[횡성군 둔내]
+무상A/S기간이언제까지였는지 물어보셨습니다.
+한국농어촌공사 에서 구매한 1대는 알고계시고
+횡성군청에서 전달받은 3대의 무상A/S기간을 모르셔서 확인해달라고하셨었습니다.
+다른곳으로 인계를위해 필요하다고 하십니다.
+010-5065-7205
+======================
+
+저희가 DID 멀티 날씨랑 정상적
+미래보
+기온 날씨 미세먼지 
+언제되는지
+===================
+새움초등학교
+조치완료
+=================
+
+광산 지속상정일자리과
+062-960-4874
+제조업체 실태조사표 받은 팩스에
+누락부분이있어서 연락주셨습니다.
+14번에 공장현황표
+공정하는부분이 돌아가는지 에 대한부분 누락이라고하시며
+확인후 연락바란다고하십니다.
+
+=======================
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -43,12 +74,15 @@
             let hour = String(today.getHours()).padStart(2, '0') + '00';
             const baseTimeArray = [200, 500, 800, 1100, 1400, 1700, 2000, 2300];
 
-            for (const baseTime of baseTimeArray) {
-                if (parseInt(hour) < baseTime) {
-                    hour = String(baseTime).padStart(4, '0');
+            // 현재 시간보다 작은 가장 가까운 이전 기준 시간 찾기
+            for (let i = baseTimeArray.length - 1; i >= 0; i--) {
+                if (parseInt(hour) >= baseTimeArray[i]) {
+                    hour = String(baseTimeArray[i]).padStart(4, '0');
                     break;
                 }
             }
+
+            // 3시간 이전 시간으로 설정
             hour = (parseInt(hour) - 300).toString().padStart(4, '0');
 
             if (parseInt(hour) < 0) {
@@ -62,66 +96,64 @@
             }
         }
 
-   async function fetchWeatherData(date, hour, attempt = 1) {
-    const area = "&nx=59&ny=74"; // 광주 지역 좌표
-    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`;
-    
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP 오류! 상태: ${response.status}`);
-        }
-        const data = await response.json();
-        const weatherInfo = data.response.body.items.item;
-        
-        let weatherString = '';
-        let temperature = '';
-        let precipitationType = '';
-        let skyStat = '';
+        async function fetchWeatherData(date, hour, attempt = 1) {
+            const area = "&nx=98&ny=76"; // 부산 지역 좌표
+            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`; // URL 수정 필요
+            
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP 오류! 상태: ${response.status}`);
+                }
+                const data = await response.json();
+                const weatherInfo = data.response.body.items.item;
+                
+                let weatherString = '';
+                let temperature = '';
+                let skyStat = '';
 
-        weatherInfo.forEach(item => {
-            if (item.category === 'SKY') {
-                const sky = parseInt(item.fcstValue);
-                skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
-            } else if (item.category === 'TMP') {
-                temperature = `${item.fcstValue}°C`;
-            } else if (item.category === 'PTY') {
-                const pty = parseInt(item.fcstValue);
-                if (pty === 1 || pty === 4) {
-                    weatherString = '비';
-                } else if (pty === 2) {
-                    weatherString = '비/눈';
-                } else if (pty === 3) {
-                    weatherString = '눈';
-                } else if (pty === 0) {
-                    weatherString = (skyStat === '1' || skyStat === '2') ? "맑음" : "흐림";
+                weatherInfo.forEach(item => {
+                    if (item.category === 'SKY') {
+                        const sky = parseInt(item.fcstValue);
+                        skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
+                    } else if (item.category === 'TMP') {
+                        temperature = `${item.fcstValue}°C`;
+                    } else if (item.category === 'PTY') {
+                        const pty = parseInt(item.fcstValue);
+                        if (pty === 1 || pty === 4) {
+                            weatherString = '비';
+                        } else if (pty === 2) {
+                            weatherString = '비/눈';
+                        } else if (pty === 3) {
+                            weatherString = '눈';
+                        } else if (pty === 0) {
+                            weatherString = (skyStat === '1' || skyStat === '2') ? "맑음" : "흐림";
+                        }
+                    }
+                });
+
+                // 결과 저장
+                weatherData.date = date;
+                weatherData.weather = weatherString;
+                weatherData.temperature = temperature;
+
+                updateWeatherDisplay();
+            } catch (error) {
+                console.error('날씨 데이터 가져오기 오류:', error);
+                if (attempt < 3) {
+                    setTimeout(() => fetchWeatherData(date, hour, attempt + 1), 3000); // 3초 후 재시도
+                } else {
+                    document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
                 }
             }
-        });
-
-        // 결과 저장
-        weatherData.date = date;
-        weatherData.weather = weatherString;
-        weatherData.temperature = temperature;
-
-        updateWeatherDisplay();
-    } catch (error) {
-        console.error('날씨 데이터 가져오기 오류:', error);
-        if (attempt < 3) {
-            setTimeout(() => fetchWeatherData(date, hour, attempt + 1), 3000); // 3초 후 재시도
-        } else {
-            document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
         }
-    }
-}
-
 
         function updateWeatherDisplay() {
             const { date, weather, temperature } = weatherData;
 
             // 날짜 포맷팅
             const formattedDate = `${date.slice(0, 4)}년 ${date.slice(4, 6)}월 ${date.slice(6, 8)}일`;
-            const formattedTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const formattedTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
 
             document.getElementById('weatherInfo').innerText = `${weather} ${temperature}`;
         }
