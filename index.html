@@ -34,7 +34,7 @@
             margin-right: 20px;
         }
         .weather-icon {
-            width: 60px; /* 아이콘 크기 조절 */
+            width: 60px;
             height: auto;
             margin-right: 20px;
         }
@@ -133,11 +133,12 @@
 
                 weatherInfo.forEach(item => {
                     if (item.category === 'SKY') {
-                        weatherString = item.fcstValue === '1' ? '맑음' : '흐림';
+                        const sky = parseInt(item.fcstValue);
+                        weatherString = sky === 1 ? '맑음' : '흐림';
                     } else if (item.category === 'TMP') {
                         temperature = `${item.fcstValue}°C`;
                     } else if (item.category === 'PTY') {
-                        pty = item.fcstValue; // 강수형태
+                        pty = parseInt(item.fcstValue); // 강수형태
                     }
                 });
 
@@ -158,16 +159,16 @@
 
             // 날씨 아이콘 설정
             const weatherIcon = document.getElementById('weatherIcon');
-            if (pty === '0') {
-                weatherIcon.src = 'Resource/WeatherIcon/Sun.png';
-            } else if (pty === '1') {
-                weatherIcon.src = 'Resource/WeatherIcon/Rain.png';
-            } else if (pty === '2') {
-                weatherIcon.src = 'Resource/WeatherIcon/Snow_Rain.png';
-            } else if (pty === '3') {
-                weatherIcon.src = 'Resource/WeatherIcon/Snow.png';
+            if (pty === 0) {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Sun.png';
+            } else if (pty === 1 || pty === 4) {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png';
+            } else if (pty === 2) {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png';
+            } else if (pty === 3) {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png';
             } else {
-                weatherIcon.src = 'Resource/WeatherIcon/Cloud.png';
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png';
             }
 
             // 미세먼지 데이터 업데이트 (임시 데이터)
