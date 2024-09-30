@@ -155,10 +155,18 @@
                 weatherData.pty = skyStat; // skyStat로 pty 대체
 
                 updateWeatherDisplay();
-            } catch (error) {
-                console.error('날씨 데이터 가져오기 오류:', error);
-                document.getElementById('error').innerText = `날씨 데이터 오류: ${error.message}`;
-            }
+            }catch (error) {
+        console.error('날씨 데이터 가져오기 오류:', error);
+        document.getElementById('error').innerText = `날씨 데이터 오류: ${error.message}`;
+
+        if (attempt < 6) {
+            setTimeout(() => {
+                fetchWeatherData(date, hour, attempt + 1);
+            }, 10000); // 10초 후 재호출
+        } else {
+            document.getElementById('error').innerText = `날씨 데이터 오류: 최대 재호출 시도 횟수 초과`;
+        }
+    }
         }
 
         function updateWeatherDisplay() {
