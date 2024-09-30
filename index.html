@@ -7,27 +7,27 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
-<style>
-    body {
-        font-family: 'Nanum Gothic', sans-serif;
-        margin: 0;
-        padding: 15px 0 0 15px; /* 상단과 좌측에 20px 패딩 */
-        background-color: #000000; /* 배경색: 검정 */
-        color: white;
-        display: flex;
-        justify-content: flex-start; /* 왼쪽 정렬 */
-        align-items: flex-start;
-        height: 100vh;
-    }
+    <style>
+        body {
+            font-family: 'Nanum Gothic', sans-serif;
+            margin: 0;
+            padding: 15px 0 0 15px; /* 상단과 좌측에 15px 패딩 */
+            background-color: #000000; /* 배경색: 검정 */
+            color: white;
+            display: flex;
+            justify-content: flex-start; /* 왼쪽 정렬 */
+            align-items: flex-start;
+            height: 100vh;
+        }
         .main {
-        display: flex;
-        align-items: flex-start; /* 왼쪽 정렬 */
-        background-color: #000000;
-        border-radius: 10px;
-        box-shadow: 0 0px 0px rgba(0, 0, 0, 1);
-        padding: px;
-        width: 600px;
-    }
+            display: flex;
+            align-items: flex-start; /* 왼쪽 정렬 */
+            background-color: #000000;
+            border-radius: 10px;
+            box-shadow: 0 0px 0px rgba(0, 0, 0, 1);
+            padding: 20px;
+            width: 600px;
+        }
         .weather-info {
             font-size: 48px;
             text-align: center;
@@ -120,7 +120,7 @@
         async function fetchWeatherData(date, hour) {
             const area = "&nx=98&ny=76"; // 부산 지역 좌표
             const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
-            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`; // URL 수정 필요
+            const url = `https://api.example.com/weather?date=${date}&hour=${hour}${area}&apikey=${apiKey}`; // URL 수정 필요
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -128,22 +128,31 @@
 
                 let weatherString = '';
                 let temperature = '';
-                let pty = '';
+                let skyStat = '';
 
                 weatherInfo.forEach(item => {
                     if (item.category === 'SKY') {
                         const sky = parseInt(item.fcstValue);
-                        weatherString = sky === 1 ? '맑음' : '흐림';
+                        skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
                     } else if (item.category === 'TMP') {
                         temperature = `${item.fcstValue}°C`;
                     } else if (item.category === 'PTY') {
-                        pty = parseInt(item.fcstValue); // 강수형태
+                        const pty = parseInt(item.fcstValue);
+                        if (pty === 1 || pty === 4) {
+                            weatherString = '비';
+                        } else if (pty === 2) {
+                            weatherString = '비/눈';
+                        } else if (pty === 3) {
+                            weatherString = '눈';
+                        } else if (pty === 0) {
+                            weatherString = (skyStat === '1' || skyStat === '2') ? "맑음" : "흐림";
+                        }
                     }
                 });
 
                 weatherData.weather = weatherString;
                 weatherData.temperature = temperature;
-                weatherData.pty = pty;
+                weatherData.pty = skyStat; // skyStat로 pty 대체
 
                 updateWeatherDisplay();
             } catch (error) {
@@ -158,13 +167,13 @@
 
             // 날씨 아이콘 설정
             const weatherIcon = document.getElementById('weatherIcon');
-            if (pty === 0) {
+            if (pty === '1') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Sun.png';
-            } else if (pty === 1 || pty === 4) {
+            } else if (pty === '2' || pty === '4') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png';
-            } else if (pty === 2) {
+            } else if (pty === '3') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png';
-            } else if (pty === 3) {
+            } else if (pty === '4') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png';
             } else {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png';
@@ -192,7 +201,19 @@
             return '매우 나쁨';
         }
 
-        fetchWeather(); // 날씨 데이터 초기 호출
+        // 매초마다 날씨 정보 갱신
+        setInterval(() => {
+            updateWeatherDisplay();
+        }, 1000); // 1초마다 갱신
+
+        // 매시 정각에 날씨 데이터 재호출
+        setInterval(() => {
+            const now = new Date();
+            if (now.getMinutes() === 0 && now.getSeconds() === 0) {
+                fetchWeather(); // 정각에 날씨 데이터 재호출
+            }
+        }, 1000); //
+                fetchWeather(); // 페이지 로드 시 초기 날씨 데이터 호출
     </script>
 </body>
 </html>
