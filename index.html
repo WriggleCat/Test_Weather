@@ -124,7 +124,7 @@
         async function fetchWeatherData(date, hour) {
             const area = "&nx=98&ny=76"; // 부산 지역 좌표
             const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
-            const url = `${date}&base_time=${hour}&nx=59&ny=74`; // URL 수정 필요
+            const url =  `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`; // URL 수정 필요
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -166,7 +166,7 @@
         }
 
         async function fetchAirQualityData() {
-            const airQualityApiUrl = 'YOUR_AIR_QUALITY_API_URL'; // 여기에 미세먼지 API URL을 입력하세요.
+            const airQualityApiUrl = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=cd3PPQWcbkKMI5VfNxGsPtJrtQj06%2FdeSWnzTp7x9WcwByrKU26y4O8UCCJSWTN24yIW6hHLmA0DleNDExXe1A%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0'; // 여기에 미세먼지 API URL을 입력하세요.
             try {
                 const response = await fetch(airQualityApiUrl);
                 const data = await response.json();
@@ -221,9 +221,10 @@
             const now = new Date();
             if (now.getMinutes() === 0 && now.getSeconds() === 0) {
                 fetchWeather(); // 정각에 날씨 데이터 재호출
+                fetchAirQualityData();
             }
         }, 1000);
-
+        fetchAirQualityData();
         fetchWeather(); // 페이지 로드 시 초기 날씨 데이터 호출
     </script>
 </body>
