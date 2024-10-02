@@ -210,5 +210,21 @@
             if (pm10 <= 150 && pm25 <= 75) return '나쁨';
             return '매우 나쁨';
         }
+        // 매초마다 날씨 정보 갱신
+        setInterval(() => {
+            updateWeatherDisplay();
+        }, 1000); // 1초마다 갱신
 
-        // 매초마다 날씨 정보
+        // 매시 정각에 날씨 데이터 재호출
+        setInterval(() => {
+            const now = new Date();
+            if (now.getMinutes() === 0 && now.getSeconds() === 0) {
+                fetchWeather(); // 정각에 날씨 데이터 재호출
+            }
+        }, 1000); // 1초마다 체크
+
+        fetchWeather(); // 페이지 로드 시 초기 날씨 데이터 호출
+    </script>
+</body>
+</html>
+
