@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -30,13 +29,13 @@
         .weather-info {
             font-size: 50px;
             text-align: center;
-            padding-top:5px;
+            padding-top: 5px;
             margin-right: 20px;
         }
         .weather-icon {
             width: 50px;
             height: 55px;
-            padding-top:8px;
+            padding-top: 8px;
             margin-right: 5px;
         }
         table {
@@ -49,13 +48,13 @@
         th {
             background-color: #004d40;
             font-size: 24px; /* 헤더 셀의 폰트 크기 설정 */
-            }
+        }
 
         td {
             font-size: 30px; /* 데이터 셀의 폰트 크기 설정 */
             text-align: center;
             color: white;
-            }
+        }
         .error {
             color: red;
             text-align: center;
@@ -158,18 +157,34 @@
                 weatherData.pty = skyStat; // skyStat로 pty 대체
 
                 updateWeatherDisplay();
-            }catch (error) {
-        console.error('날씨 데이터 가져오기 오류:', error);
-        document.getElementById('error').innerText = `날씨 데이터 오류: ${error.message}`;
-
-        if (attempt < 6) {
-            setTimeout(() => {
-                fetchWeatherData(date, hour, attempt + 1);
-            }, 10000); // 10초 후 재호출
-        } else {
-            document.getElementById('error').innerText = `날씨 데이터 오류: 최대 재호출 시도 횟수 초과`;
+                await fetchAirQualityData(); // 미세먼지 데이터 호출
+            } catch (error) {
+                console.error('날씨 데이터 가져오기 오류:', error);
+                document.getElementById('error').innerText = `날씨 데이터 오류: ${error.message}`;
+            }
         }
-    }
+
+        async function fetchAirQualityData() {
+            const airQualityApiUrl ='http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=cd3PPQWcbkKMI5VfNxGsPtJrtQj06%2FdeSWnzTp7x9WcwByrKU26y4O8UCCJSWTN24yIW6hHLmA0DleNDExXe1A%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0'; // 여기에 미세먼지 API URL을 입력하세요.
+            try {
+                const response = await fetch(airQualityApiUrl);
+                const data = await response.json();
+
+                const pm10Value = data.pm10Value; // API에서 pm10Value 가져오기
+                const pm25Value = data.pm25Value; // API에서 pm25Value 가져오기
+                const status = getStatus(pm10Value, pm25Value); // 상태 계산
+
+                // 테이블 업데이트
+                const dataRow = document.getElementById('dataRow');
+                dataRow.innerHTML = `
+                    <td>${pm10Value}</td>
+                    <td>${pm25Value}</td>
+                    <td>${status}</td>
+                `;
+            } catch (error) {
+                console.error('미세먼지 데이터 가져오기 오류:', error);
+                document.getElementById('error').innerText = `미세먼지 데이터 오류: ${error.message}`;
+            }
         }
 
         function updateWeatherDisplay() {
@@ -184,25 +199,9 @@
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png';
             } else if (pty === '3') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png';
-            } else if (pty === '4') {
-                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png';
             } else {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png';
             }
-
-            // 미세먼지 데이터 업데이트 (임시 데이터)
-            const dataRow = document.getElementById('dataRow');
-            const airQualityData = {
-                pm10: 50, // 예시 값
-                pm25: 20, // 예시 값
-                status: getStatus(50, 20) // 상태 계산
-            };
-
-            dataRow.innerHTML = `
-                <td>${airQualityData.pm10}</td>
-                <td>${airQualityData.pm25}</td>
-                <td>${airQualityData.status}</td>
-            `;
         }
 
         function getStatus(pm10, pm25) {
@@ -212,19 +211,4 @@
             return '매우 나쁨';
         }
 
-        // 매초마다 날씨 정보 갱신
-        setInterval(() => {
-            updateWeatherDisplay();
-        }, 1000); // 1초마다 갱신
-
-        // 매시 정각에 날씨 데이터 재호출
-        setInterval(() => {
-            const now = new Date();
-            if (now.getMinutes() === 0 && now.getSeconds() === 0) {
-                fetchWeather(); // 정각에 날씨 데이터 재호출
-            }
-        }, 1000); //
-                fetchWeather(); // 페이지 로드 시 초기 날씨 데이터 호출
-    </script>
-</body>
-</html>
+        // 매초마다 날씨 정보
