@@ -220,10 +220,12 @@
             const now = new Date();
             if (now.getMinutes() === 0 && now.getSeconds() === 0) {
                 fetchWeather(); // 정각에 날씨 데이터 재호출
+                fetchAirQualityData();
             }
         }, 1000); // 1초마다 체크
 
         fetchWeather(); // 페이지 로드 시 초기 날씨 데이터 호출
+        fetchAirQualityData();
     </script>
 </body>
 </html>
