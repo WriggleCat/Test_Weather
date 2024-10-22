@@ -80,12 +80,14 @@
         let temperature = '';
         let precipitationType = '';
         let skyStat = '';
-
+//TMP = 단기 /T1H = 초단기
         weatherInfo.forEach(item => {
             if (item.category === 'SKY') {
                 const sky = parseInt(item.fcstValue);
                 skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
-            } else if (item.category === 'T1H') {
+            } /*else if (item.category === 'T1H') {
+                temperature = `${item.fcstValue}°C`;*/
+                else if (item.category === 'TMP') {
                 temperature = `${item.fcstValue}°C`;
             } else if (item.category === 'PTY') {
                 const pty = parseInt(item.fcstValue);
