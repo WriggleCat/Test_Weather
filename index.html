@@ -124,7 +124,7 @@
 
         async function fetchWeatherData(date, hour) {
             const area = "&nx=98&ny=76"; // 부산 지역 좌표
-            const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
+            const apiKey = 'jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D'; // 여기에 API 키를 입력하세요.
             const url =  `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=59&ny=74`; // URL 수정 필요
             try {
                 const response = await fetch(url);
@@ -165,26 +165,95 @@
             }
         }
 
-        async function fetchAirQualityData() {
-            const airQualityApiUrl = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=cd3PPQWcbkKMI5VfNxGsPtJrtQj06%2FdeSWnzTp7x9WcwByrKU26y4O8UCCJSWTN24yIW6hHLmA0DleNDExXe1A%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0'; // 여기에 미세먼지 API URL을 입력하세요.
-            try {
-                const response = await fetch(airQualityApiUrl);
-                const data = await response.json();
-                const airQualityInfo = data.response.body.items[0]; // 첫 번째 아이템 가져오기
+        
+        const token = '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'; // 개인 액세스 토큰
+        const owner = 'WriggleCat'; // GitHub 사용자 이름
+        const repo = 'Test_Weather'; // 리포지토리 이름
+        const baseUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
 
-                // pm10Value와 pm25Value를 td에 업데이트
-                const dataRow = document.getElementById('dataRow');
-                dataRow.innerHTML = `
-                    <td>${airQualityInfo.pm10Value}</td>
-                    <td>${airQualityInfo.pm25Value}</td>
-                    <td>${getStatus(airQualityInfo.pm10Value, airQualityInfo.pm25Value)}</td>
-                `;
-            } catch (error) {
-                console.error('미세먼지 데이터 가져오기 오류:', error);
-                document.getElementById('error').innerText = `미세먼지 데이터 오류: ${error.message}`;
+        // 시스템 날짜 형식 (YYYYMMDD)
+        const today = new Date();
+        const dateString = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD 형식
+        const jsonFilePath = `Resource/${dateString}.json`; // JSON 파일 경로
+
+        async function fetchAirQualityData() {
+            // 파일 존재 여부 확인
+            const fileExists = await checkFileExists(jsonFilePath);
+            let airQualityInfo;
+
+            if (fileExists) {
+                // JSON 파일이 존재하면 파일을 읽어오기
+                const response = await fetch(`${baseUrl}${jsonFilePath}`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3.raw' // 원시 데이터 가져오기
+                    }
+                });
+                airQualityInfo = await response.json();
+            } else {
+                // JSON 파일이 없으면 API에서 데이터 가져오기
+                const airQualityApiUrl = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=cd3PPQWcbkKMI5VfNxGsPtJrtQj06%2FdeSWnzTp7x9WcwByrKU26y4O8UCCJSWTN24yIW6hHLmA0DleNDExXe1A%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0';
+                const apiResponse = await fetch(airQualityApiUrl);
+                const data = await apiResponse.json();
+                airQualityInfo = data.response.body.items[0]; // 첫 번째 아이템 가져오기
+                
+                // GitHub에 JSON 파일로 저장
+                await saveJsonFile(jsonFilePath, airQualityInfo);
+            }
+
+            // pm10Value와 pm25Value를 td에 업데이트
+            const dataRow = document.getElementById('dataRow');
+            dataRow.innerHTML = `
+                <td>${airQualityInfo.pm10Value}</td>
+                <td>${airQualityInfo.pm25Value}</td>
+                <td>${getStatus(airQualityInfo.pm10Value, airQualityInfo.pm25Value)}</td>
+            `;
+        }
+
+        async function checkFileExists(filePath) {
+            const response = await fetch(`${baseUrl}${filePath}`, {
+                headers: {
+                    'Authorization': `token ${token}`
+                }
+            });
+            return response.status === 200; // 200이면 파일이 존재
+        }
+
+        async function saveJsonFile(filePath, data) {
+            const jsonString = JSON.stringify(data, null, 2); // JSON 문자열로 변환
+            const base64Content = btoa(jsonString); // Base64 인코딩
+
+            const body = {
+                message: "Add air quality data",
+                content: base64Content
+            };
+
+            const response = await fetch(`${baseUrl}${filePath}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (response.ok) {
+                console.log('파일이 성공적으로 업로드되었습니다.');
+            } else {
+                console.error('파일 업로드 실패:', response.status, response.statusText);
             }
         }
 
+        function getStatus(pm10, pm25) {
+            if (pm10 <= 30 && pm25 <= 15) return '좋음';
+            if (pm10 <= 80 && pm25 <= 35) return '보통';
+            if (pm10 <= 150 && pm25 <= 75) return '나쁨';
+            return '매우 나쁨';
+        }
+
+        // 페이지 로드 시 초기 미세먼지 데이터 호출
+        fetchAirQualityData();
         function updateWeatherDisplay() {
             const { weather, temperature, pty, skyStat } = weatherData;
             document.getElementById('weatherInfo').innerText = `${weather} ${temperature}`;
