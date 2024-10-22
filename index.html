@@ -126,9 +126,7 @@
             const area = "&nx=98&ny=76"; // 부산 지역 좌표
             const apiKey = 'jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D'; // 여기에 API 키를 입력하세요.
              // 단기
-   // const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=55&ny=124`;
-        //초단기
-            const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=40&dataType=JSON&base_date=${date}&base_time=${hour}&nx=55&ny=124`;
+    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=55&ny=124`;
     try {
             try {
                 const response = await fetch(url);
@@ -143,9 +141,7 @@
                     if (item.category === 'SKY') {
                         const sky = parseInt(item.fcstValue);
                         weatherData.skyStat = sky; // skyStat 저장
-                    } /*else if (item.category === 'TMP') {
-                        temperature = `${item.fcstValue}°C`;*/
-                        else if (item.category === 'T1H') {
+                    } else if (item.category === 'TMP') {
                         temperature = `${item.fcstValue}°C`;
                     } else if (item.category === 'PTY') {
                         const pty = parseInt(item.fcstValue);
