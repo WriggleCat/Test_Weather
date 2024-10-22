@@ -91,7 +91,8 @@
             pty: '',
             skyStat: '' // skyStat 추가
         };
-
+//미세먼지 API : 한국환경공단_에어코리아_대기오염정보 활용
+//날씨 API : 기상청_단기예보_(구)동네예보_조회서비스 활용
         async function fetchWeather() {
             // 날씨 정보 가져오기
             const today = new Date();
@@ -195,7 +196,7 @@
                 airQualityInfo = await response.json();
             } else {
                 // JSON 파일이 없으면 API에서 데이터 가져오기
-                const airQualityApiUrl = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=cd3PPQWcbkKMI5VfNxGsPtJrtQj06%2FdeSWnzTp7x9WcwByrKU26y4O8UCCJSWTN24yIW6hHLmA0DleNDExXe1A%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0';
+                const airQualityApiUrl = 'https://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getCtprvnRltmMesureDnsty?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&sidoName=%EA%B4%91%EC%A3%BC&pageNo=1&numOfRows=1&returnType=JSON&ver=1.0';
                 const apiResponse = await fetch(airQualityApiUrl);
                 const data = await apiResponse.json();
                 airQualityInfo = data.response.body.items[0]; // 첫 번째 아이템 가져오기
