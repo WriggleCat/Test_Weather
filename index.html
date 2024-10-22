@@ -223,31 +223,32 @@
             return response.status === 200; // 200이면 파일이 존재
         }
 
-        async function saveJsonFile(filePath, data) {
-            const jsonString = JSON.stringify(data, null, 2); // JSON 문자열로 변환
-            const base64Content = btoa(jsonString); // Base64 인코딩
+async function saveJsonFile(filePath, data) {
+    const jsonString = JSON.stringify(data, null, 2); // JSON 문자열로 변환
+    const base64Content = btoa(jsonString); // Base64 인코딩
 
-            const body = {
-                message: "Add air quality data",
-                content: base64Content
-            };
+    const body = {
+        message: "Add air quality data",
+        content: base64Content
+    };
 
-            const response = await fetch(`${baseUrl}${filePath}`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(body)
-            });
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+    });
 
-            if (response.ok) {
-                console.log('파일이 성공적으로 업로드되었습니다.');
-            } else {
-                console.error('파일 업로드 실패:', response.status, response.statusText);
-            }
-        }
+    if (response.ok) {
+        console.log('파일이 성공적으로 업로드되었습니다.');
+    } else {
+        const errorData = await response.json();
+        console.error('파일 업로드 실패:', response.status, response.statusText, errorData);
+    }
+}
 
         function getStatus(pm10, pm25) {
             if (pm10 <= 30 && pm25 <= 15) return '좋음';
