@@ -217,6 +217,7 @@
             const response = await fetch(`${baseUrl}${filePath}`, {
                 headers: {
                     'Authorization': `token ${token}`
+                    'Accept': 'application/vnd.github.v3.raw'
                 }
             });
             return response.status === 200; // 200이면 파일이 존재
