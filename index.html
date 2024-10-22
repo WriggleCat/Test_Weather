@@ -215,7 +215,7 @@
         async function checkFileExists(filePath) {
             const response = await fetch(`${baseUrl}${filePath}`, {
                 headers: {
-                    'Authorization': `token ${token}
+                    'Authorization': `token ${token}`
                 }
             });
             return response.status === 200; // 200이면 파일이 존재
