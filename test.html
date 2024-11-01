@@ -85,54 +85,67 @@
             }
         }
 
-        async function fetchWeatherData(date, hour) {
+        async function fetchWeatherData(date, hour, attempts = 0) {
             const area = "&nx=98&ny=76"; // 부산 지역 좌표
             const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
             const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=89&ny=90`; // API URL을 수정하세요.
 
-             try {
-        const fetchPromise = fetch(url);
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('응답 시간이 초과되었습니다.')), 20000) // 20초 대기
-        );
+            try {
+                const fetchPromise = fetch(url);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('응답 시간이 초과되었습니다.')), 20000) // 20초 대기
+                );
 
-        const response = await Promise.race([fetchPromise, timeoutPromise]);
-        const data = await response.json();
-        const weatherInfo = data.response.body.items.item;
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
 
-        let weatherString = '';
-        let temperature = '';
+                if (!response.ok) {
+                    throw new Error('네트워크 응답이 올바르지 않습니다.');
+                }
 
-        weatherInfo.forEach(item => {
-            if (item.category === 'SKY') {
-                const sky = parseInt(item.fcstValue);
-                weatherData.skyStat = sky; // skyStat 저장
-            } else if (item.category === 'TMP') {
-                temperature = `${item.fcstValue}°C`;
-            } else if (item.category === 'PTY') {
-                const pty = parseInt(item.fcstValue);
-                weatherData.pty = pty; // pty 저장
-                if (pty === 1 || pty === 4) {
-                    weatherString = '비';
-                } else if (pty === 2) {
-                    weatherString = '비/눈';
-                } else if (pty === 3) {
-                    weatherString = '눈';
-                } else if (pty === 0) {
-                    weatherString = (weatherData.skyStat === 1 || weatherData.skyStat === 2) ? "맑음" : "흐림";
+                const data = await response.json();
+                const weatherInfo = data.response.body.items.item;
+
+                let weatherString = '';
+                let temperature = '';
+
+                weatherInfo.forEach(item => {
+                    if (item.category === 'SKY') {
+                        const sky = parseInt(item.fcstValue);
+                        weatherData.skyStat = sky; // skyStat 저장
+                    } else if (item.category === 'TMP') {
+                        temperature = `${item.fcstValue}°C`;
+                    } else if (item.category === 'PTY') {
+                        const pty = parseInt(item.fcstValue);
+                        weatherData.pty = pty; // pty 저장
+                        if (pty === 1 || pty === 4) {
+                            weatherString = '비';
+                        } else if (pty === 2) {
+                            weatherString = '비/눈';
+                        } else if (pty === 3) {
+                            weatherString = '눈';
+                        } else if (pty === 0) {
+                            weatherString = (weatherData.skyStat === 1 || weatherData.skyStat === 2) ? "맑음" : "흐림";
+                        }
+                    }
+                });
+
+                weatherData.weather = weatherString;
+                weatherData.temperature = temperature;
+
+                updateWeatherDisplay();
+            } catch (error) {
+                console.error('날씨 데이터 가져오기 오류:', error);
+                attempts++;
+
+                if (attempts < 4) {
+                    console.log(`재시도 ${attempts}...`);
+                    setTimeout(() => fetchWeatherData(date, hour, attempts), 20000); // 20초 후 재시도
+                } else {
+                    document.getElementById('error').innerText = '날씨 데이터 이상!';
                 }
             }
-        });
+        }
 
-        weatherData.weather = weatherString;
-        weatherData.temperature = temperature;
-
-        updateWeatherDisplay();
-    } catch (error) {
-        console.error('날씨 데이터 가져오기 오류:', error);
-        document.getElementById('error').innerText = `날씨 데이터 오류: ${error.message}`;
-    }
-}
         function updateWeatherDisplay() {
             const { weather, temperature, pty, skyStat } = weatherData;
             document.getElementById('weatherInfo').innerText = `${weather} ${temperature}`;
