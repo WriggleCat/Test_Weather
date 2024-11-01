@@ -10,31 +10,53 @@
     <style>
         body {
             font-family: 'Nanum Gothic', sans-serif;
-            text-align: left;
             margin: 0;
-            padding-left: 15px;
-            background-color: black;
-        }
-        #weatherInfo {
-            font-size: 48px;
-            margin-top: 15px;
+            padding: 2px 0 0 5px; /* 상단과 좌측에 5px 패딩 */
+            background-color: #000000; /* 배경색: 검정 */
             color: white;
+            display: flex;
+            justify-content: flex-start; /* 왼쪽 정렬 */
+            align-items: flex-start;
+            height: 100vh;
         }
-        #error {
+        .main {
+            display: flex;
+            align-items: flex-start; /* 왼쪽 정렬 */
+            background-color: #000000;
+            padding: 0px;
+            width: 700px;
+        }
+        .weather-info {
+            font-size: 50px;
+            text-align: center;
+            padding-top: 5px;
+            margin-right: 20px;
+        }
+        .weather-icon {
+            width: auto;
+            height: 55px;
+            padding-top: 8px;
+            margin-right: 5px;
+        }
+        .error {
             color: red;
-            margin-top: 15px;
+            text-align: center;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="weatherInfo">날씨 정보를 불러오는 중...</div>
-    <div id="error"></div>
+    <div class="main">
+        <div id="weatherInfo" class="weather-info">날씨 정보를 불러오는 중...</div>
+        <img id="weatherIcon" class="weather-icon" src="" alt="날씨 아이콘" />
+        <div id="error" class="error"></div>
+    </div>
     <script>
         let weatherData = {
-            date: '',
-            time: '',
             weather: '',
-            temperature: ''
+            temperature: '',
+            pty: '',
+            skyStat: '' // skyStat 추가
         };
 
         async function fetchWeather() {
@@ -43,12 +65,13 @@
             let hour = String(today.getHours()).padStart(2, '0') + '00';
             const baseTimeArray = [200, 500, 800, 1100, 1400, 1700, 2000, 2300];
 
-            for (const baseTime of baseTimeArray) {
-                if (parseInt(hour) < baseTime) {
-                    hour = String(baseTime).padStart(4, '0');
+            for (let i = baseTimeArray.length - 1; i >= 0; i--) {
+                if (parseInt(hour) >= baseTimeArray[i]) {
+                    hour = String(baseTimeArray[i]).padStart(4, '0');
                     break;
                 }
             }
+
             hour = (parseInt(hour) - 300).toString().padStart(4, '0');
 
             if (parseInt(hour) < 0) {
@@ -62,81 +85,98 @@
             }
         }
 
-    async function fetchWeatherData(date, hour, attempt = 1) {
-    const area = "&nx=98&ny=76"; // 부산 지역 좌표
-    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=89&ny=90`;
-    
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP 오류! 상태: ${response.status}`);
-        }
-        const data = await response.json();
-        const weatherInfo = data.response.body.items.item;
-        
-        let weatherString = '';
-        let temperature = '';
-        let precipitationType = '';
-        let skyStat = '';
+        async function fetchWeatherData(date, hour, attempts = 0) {
+            const area = "&nx=98&ny=76"; // 부산 지역 좌표
+            const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
+            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=89&ny=90`; // API URL을 수정하세요.
 
-        weatherInfo.forEach(item => {
-            if (item.category === 'SKY') {
-                const sky = parseInt(item.fcstValue);
-                skyStat = sky === 1 ? '1' : sky === 2 ? '2' : sky === 3 ? '3' : '4';
-            } else if (item.category === 'TMP') {
-                temperature = `${item.fcstValue}°C`;
-            } else if (item.category === 'PTY') {
-                const pty = parseInt(item.fcstValue);
-                if (pty === 1 || pty === 4) {
-                    weatherString = '비';
-                } else if (pty === 2) {
-                    weatherString = '비/눈';
-                } else if (pty === 3) {
-                    weatherString = '눈';
-                } else if (pty === 0) {
-                    weatherString = (skyStat === '1' || skyStat === '2') ? "맑음" : "흐림";
+            try {
+                const fetchPromise = fetch(url);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('응답 시간이 초과되었습니다.')), 20000) // 20초 대기
+                );
+
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+                if (!response.ok) {
+                    throw new Error('네트워크 응답이 올바르지 않습니다.');
+                }
+
+                const data = await response.json();
+                const weatherInfo = data.response.body.items.item;
+
+                let weatherString = '';
+                let temperature = '';
+
+                weatherInfo.forEach(item => {
+                    if (item.category === 'SKY') {
+                        const sky = parseInt(item.fcstValue);
+                        weatherData.skyStat = sky; // skyStat 저장
+                    } else if (item.category === 'TMP') {
+                        temperature = `${item.fcstValue}°C`;
+                    } else if (item.category === 'PTY') {
+                        const pty = parseInt(item.fcstValue);
+                        weatherData.pty = pty; // pty 저장
+                        if (pty === 1 || pty === 4) {
+                            weatherString = '비';
+                        } else if (pty === 2) {
+                            weatherString = '비/눈';
+                        } else if (pty === 3) {
+                            weatherString = '눈';
+                        } else if (pty === 0) {
+                            weatherString = (weatherData.skyStat === 1 || weatherData.skyStat === 2) ? "맑음" : "흐림";
+                        }
+                    }
+                });
+
+                weatherData.weather = weatherString;
+                weatherData.temperature = temperature;
+
+                updateWeatherDisplay();
+            } catch (error) {
+                console.error('날씨 데이터 가져오기 오류:', error);
+                attempts++;
+
+                if (attempts < 4) {
+                    console.log(`재시도 ${attempts}...`);
+                    setTimeout(() => fetchWeatherData(date, hour, attempts), 20000); // 20초 후 재시도
+                } else {
+                    document.getElementById('error').innerText = '날씨 데이터 이상!';
                 }
             }
-        });
-
-        // 결과 저장
-        weatherData.date = date;
-        weatherData.weather = weatherString;
-        weatherData.temperature = temperature;
-
-        updateWeatherDisplay();
-    } catch (error) {
-        console.error('날씨 데이터 가져오기 오류:', error);
-        if (attempt < 3) {
-            setTimeout(() => fetchWeatherData(date, hour, attempt + 1), 3000); // 3초 후 재시도
-        } else {
-            document.getElementById('error').innerText = `데이터 오류: ${error.message}`;
         }
-    }
-}
-
 
         function updateWeatherDisplay() {
-            const { date, weather, temperature } = weatherData;
-
-            // 날짜 포맷팅
-            const formattedDate = `${date.slice(0, 4)}년 ${date.slice(4, 6)}월 ${date.slice(6, 8)}일`;
-            const formattedTime = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
+            const { weather, temperature, pty, skyStat } = weatherData;
             document.getElementById('weatherInfo').innerText = `${weather} ${temperature}`;
+
+            // 날씨 아이콘 설정
+            const weatherIcon = document.getElementById('weatherIcon');
+            if (pty === '0' && skyStat === '1') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Sun.png'; // 맑음
+            } else if (pty === '1') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png'; // 비
+            } else if (pty === '2' || pty === '4') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png'; // 비/눈
+            } else if (pty === '3') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png'; // 눈
+            } else if (pty === '0' && skyStat === '4') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 흐림
+            } else {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 기본 흐림 아이콘
+            }
         }
 
-        function checkAndFetchWeather() {
+        // 페이지 로드 시 초기 날씨 데이터 호출
+        fetchWeather();
+
+        // 매시 정각에 날씨 데이터 재호출
+        setInterval(() => {
             const now = new Date();
             if (now.getMinutes() === 0 && now.getSeconds() === 0) {
-                fetchWeather();
+                fetchWeather(); // 정각에 날씨 데이터 재호출
             }
-            updateWeatherDisplay(); 
-        }
-
-        setInterval(checkAndFetchWeather, 1000); // 1초마다 갱신
-
-        fetchWeather(); // 초기 호출
+        }, 1000);
     </script>
 </body>
 </html>
