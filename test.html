@@ -93,7 +93,7 @@
              try {
         const fetchPromise = fetch(url);
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('응답 시간이 초과되었습니다.')), 10000) // 10초 대기
+            setTimeout(() => reject(new Error('응답 시간이 초과되었습니다.')), 20000) // 20초 대기
         );
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
