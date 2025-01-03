@@ -62,17 +62,17 @@
         async function fetchWeather() {
             const today = new Date();
             const date = today.toISOString().slice(0, 10).replace(/-/g, '');
-            let hour = String(today.getHours()).padStart(2, '0') + '00';
+            let hour1 = String(today.getHours()).padStart(2, '0');
+            let minute = String(today.getMinutes()).padStart(2, '0');
+            let hour = hour1 + minute;
             const baseTimeArray = [200, 500, 800, 1100, 1400, 1700, 2000, 2300];
-
-            for (let i = baseTimeArray.length - 1; i >= 0; i--) {
-                if (parseInt(hour) >= baseTimeArray[i]) {
+ 
+           for (let i = baseTimeArray.length - 1; i >= 0; i--) {
+                if (parseInt(hour) > (baseTimeArray[i] + 15)) {
                     hour = String(baseTimeArray[i]).padStart(4, '0');
                     break;
                 }
             }
-
-            hour = (parseInt(hour) - 300).toString().padStart(4, '0');
 
             if (parseInt(hour) < 0) {
                 const yesterday = new Date(today);
@@ -124,7 +124,15 @@
                         } else if (pty === 3) {
                             weatherString = '눈';
                         } else if (pty === 0) {
-                           weatherString = (weatherData.skyStat === 4) ? "흐림" : "맑음";
+                           if(weatherData.skyStat === 1) {
+                                weatherString = "맑음";
+                           }
+                           else if(weatherData.skyStat === 3) {
+                                weatherString = "구름많음";
+                           }
+                           else if(weatherData.skyStat === 4) {
+                                weatherString = "흐림";
+                           }                            
                         }
                     }
                 });
@@ -152,15 +160,15 @@
 
             // 날씨 아이콘 설정
             const weatherIcon = document.getElementById('weatherIcon');
-             if (pty === '0' && (skyStat === '1' || skyStat === '3')) {
+             if (pty === 0 && skyStat === 1) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Sun.png'; // 맑음
-            } else if (pty === '0' && skyStat === '4') {
+            } else if (pty === 0 && (skyStat === 4 || skyStat === 3)) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 흐림
-            } else if (pty === '1' || pty === '4') {
+            } else if (pty === 1 || pty === 4) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png'; // 비
-            } else if (pty === '2') {
+            } else if (pty === 2) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png'; // 비/눈
-            } else if (pty === '3') {
+            } else if (pty === 3) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png'; // 눈            
             } else {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 기본 흐림 아이콘
