@@ -88,7 +88,7 @@
         async function fetchWeatherData(date, hour, attempts = 0) {
             const area = "&nx=95&ny=75"; // 부산 지역 좌표
             const apiKey = 'YOUR_API_KEY'; // 여기에 API 키를 입력하세요.
-            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=95&ny=75`; // API URL을 수정하세요.
+            const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=jf%2FvdfY7Y%2BbX9OrcH4QGLyZoaIZAXSa7hYlvlZ9mU%2B8eLl3o7ZkUFIHKY45xn1ksjCiwnxG5xvrojybxWJ3R5Q%3D%3D&pageNo=1&numOfRows=10&dataType=JSON&base_date=${date}&base_time=${hour}&nx=95&ny=77`; // API URL을 수정하세요.
 
             try {
                 const fetchPromise = fetch(url);
@@ -124,7 +124,7 @@
                         } else if (pty === 3) {
                             weatherString = '눈';
                         } else if (pty === 0) {
-                            weatherString = (weatherData.skyStat === 1 || weatherData.skyStat === 2) ? "맑음" : "흐림";
+                           weatherString = (weatherData.skyStat === 4) ? "흐림" : "맑음";
                         }
                     }
                 });
@@ -152,16 +152,16 @@
 
             // 날씨 아이콘 설정
             const weatherIcon = document.getElementById('weatherIcon');
-            if (pty === '0' && skyStat === '1') {
+             if (pty === '0' && (skyStat === '1' || skyStat === '3')) {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Sun.png'; // 맑음
-            } else if (pty === '1') {
-                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png'; // 비
-            } else if (pty === '2' || pty === '4') {
-                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png'; // 비/눈
-            } else if (pty === '3') {
-                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png'; // 눈
             } else if (pty === '0' && skyStat === '4') {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 흐림
+            } else if (pty === '1' || pty === '4') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Rain.png'; // 비
+            } else if (pty === '2') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow_Rain.png'; // 비/눈
+            } else if (pty === '3') {
+                weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Snow.png'; // 눈            
             } else {
                 weatherIcon.src = 'https://github.com/WriggleCat/Test_Weather/raw/main/Resource/WeatherIcon/Cloud.png'; // 기본 흐림 아이콘
             }
